@@ -59,12 +59,15 @@
     [UIView setAnimationDuration:3.0F];
     [UIView setAnimationRepeatCount:1];
     [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
-    _label2.text=@"de";
-    _label2.alpha=1;
-    _label3.text=@"好";
-    _label3.alpha=1;
+    
     _label4.text=@"东西";
     _label4.alpha=1;
+    
+    _label3.text=@"好";
+    _label3.alpha=1;
+    
+    _label2.text=@"de";
+    _label2.alpha=1;
     [UIView setAnimationDidStopSelector:@selector(MainViewDisplay)];
     [UIView commitAnimations];
     
@@ -76,8 +79,6 @@
 {
     
     //创建自定义导航栏  将自定义导航栏设置成rootView 将首页设置成rootNavView
- 
-    
     
     UINavigationController *mainNC=[[UINavigationController alloc] initWithRootViewController:[[MainViewController alloc] init]];
     

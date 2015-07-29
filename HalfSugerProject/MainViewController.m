@@ -65,7 +65,7 @@
     //先设置头
     [self.navigationController.navigationBar addSubview:_headerView];
     
-    _dataArray=[NSMutableArray array];
+    _dataArray=[[NSMutableArray alloc] initWithCapacity:0];
     [CYHHTTPParserEngine requestBannerWithcompletionBlock:^(NSDictionary *dic) {
         NSArray *bannerArr=dic[@"data"][@"banner"];
         NSArray *topicArr=dic[@"data"][@"topic"];
@@ -92,7 +92,14 @@
     
     //设置collection的属性,代理和注册表格
     
-    self.collectionView=[[UICollectionView alloc] init];
+    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
+    layout.itemSize = CGSizeMake(380, 250);
+    layout.sectionInset = UIEdgeInsetsMake(2, 2, 2, 2);
+    layout.minimumLineSpacing = 2;
+    
+    
+    
+    self.collectionView=[[UICollectionView alloc] initWithFrame:CGRectMake(0, 64, self.view.frame.size.width, self.view.frame.size.height-64) collectionViewLayout:layout];
     self.collectionView.backgroundColor = [UIColor whiteColor];
     self.collectionView.contentInset = UIEdgeInsetsMake(250, 0, 0, 0);
     self.collectionView.delegate=self;
@@ -263,7 +270,16 @@
 
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return _dataArray.count-5;
+    
+    if (_dataArray.count>5) {
+        return _dataArray.count-5;
+    }else
+    {
+        return 1;
+    
+    }
+    
+    
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
