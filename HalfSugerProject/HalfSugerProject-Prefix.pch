@@ -1,0 +1,97 @@
+//
+// Prefix header for all source files of the 'xxxxxIphone' target in the 'xxxxxIphone' project
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_5_0
+#warning "This project uses features only available in iOS SDK 5.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+    #import <UIKit/UIKit.h>
+    #import <QuartzCore/QuartzCore.h>
+    #import "AFNetworking.h"
+    #import "CYHHTTPParserEngine.h"
+    #import "UIImageView+WebCache.h"
+    #import "UIButton+WebCache.h"
+  //  #import "Config.h"
+   // #import "ASIHTTPRequest.h"
+   // #import "ASIFormDataRequest.h"
+  //  #import "EGOImageView.h"
+  //  #import "SBJson.h"
+  //  #import "Http.h"
+  //  #import "DDInfoDialog.h"
+    #import "CYHAppDelegate.h"
+ //   #import "CommonViewController.h"
+ //   #import "UIView+Additions.h"
+ //   #import "UIImage-Extensions.h"
+  //  #import "BaseViewController.h"
+// #import "NSString+Additions.h"
+  //  #import "NSString+NULL.h"
+  //  #import "UIColor-Expanded.h"
+   // #import "UIColor+Helper.h"
+   // #import "SystemInfo.h"
+  //  #import "Constant.h"
+  //  #import "AlertMessageView.h"
+#endif
+
+// 本地化
+#define L(key)                      [[NSBundle mainBundle] localizedStringForKey:(key) value:@"" table:nil]
+#define F(key)                      [UIFont systemFontOfSize:key];
+#define FB(key)                     [UIFont boldSystemFontOfSize:key];
+
+// 颜色值
+#define RGBCOLOR(r,g,b)             [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1]
+
+#define RGBACOLOR(r,g,b,a)          [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a]
+
+// 内存管理
+#define SNRetain(__v)                ([__v retain]);
+
+#define SNAutorelease(__v)           ([__v autorelease]);
+
+#define TT_RELEASE_SAFELY(__REF)     { if (nil != (__REF)) { CFRelease(__REF); __REF = nil; } }
+
+#define TTVIEW_RELEASE_SAFELY(__REF) { if (nil != (__REF)) { [__REF removeFromSuperview];   CFRelease(__REF); __REF = nil; } }
+
+#define HTTP_RELEASE_SAFELY(__REF)   { if (nil != (__REF)) { [__REF clearDelegatesAndCancel]; TT_RELEASE_SAFELY(__REF);}}
+
+#define TT_INVALIDATE_TIMER(__REF)   { if (nil != (__REF)) { [__REF invalidate]; __REF = nil;} }
+
+//
+#define HTTP_MSG_RELEASE_SAFELY(__REF) { [__REF cancelDelegate];  TT_RELEASE_SAFELY(__REF); }
+
+// 非空判断
+#define NotNilAndNull(_ref)          (((_ref) != nil) && (![(_ref) isEqual:[NSNull null]]))
+
+#define IsNilOrNull(_ref)            (((_ref) == nil) || ([(_ref) isEqual:[NSNull null]]))
+
+//字符串是否为空
+#define IsStrEmpty(_ref)             (((_ref) == nil) || ([(_ref) isEqual:[NSNull null]]) ||([(_ref)isEqualToString:@""]))
+//数组是否为空
+#define IsArrEmpty(_ref)             (((_ref) == nil) || ([(_ref) isEqual:[NSNull null]]) ||([(_ref) count] == 0))
+
+
+#define OC(str) [NSString stringWithCString:(str) encoding:NSUTF8StringEncoding]
+
+#pragma mark - 日志开关
+
+#ifdef DEBUG
+    #define DLog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__);
+#else
+    #define DLog(...)
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
