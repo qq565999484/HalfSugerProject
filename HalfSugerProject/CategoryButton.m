@@ -29,12 +29,19 @@
         
         _bgView=[[UIView alloc] init];
         _bgView.frame=CGRectMake(0, 0, 70, 40);
+        
+        
         [self addSubview:_bgView];
         
         //这个上面需要添加一个label和一个图片视图 lebel的字是根据通知获取和这个类没有关系 视图根据状态
+        UIImageView *imageView=[[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 70, 25)];
+        imageView.image=[UIImage imageNamed:@"icon"];
+        [_bgView addSubview:imageView];
         
-        
-        
+        UILabel *label=[[UILabel alloc] initWithFrame:CGRectMake(0, 25, 70, 15)];
+        label.font=[UIFont systemFontOfSize:15];
+        label.text=self.titleStr;
+        [_bgView addSubview:label];
         
     }
 

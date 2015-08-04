@@ -1,8 +1,8 @@
 //
 //  MyCell.m
-//  HalfSugarProject
+//  HalfSugerProject
 //
-//  Created by mac on 15-7-29.
+//  Created by mac on 15-7-30.
 //  Copyright (c) 2015年 陈一航. All rights reserved.
 //
 

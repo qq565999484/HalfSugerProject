@@ -11,6 +11,13 @@
 @interface CYHHTTPParserEngine : NSObject
 
 
-+ (void)requestBannerWithcompletionBlock:(void(^)(NSDictionary *dic))block;
 
++ (void)requestBannerByPageNum:(int)page completionBlock:(void(^)(NSDictionary *dic))block;
+
+
++ (void)requestBannerByCategoryID:(int)category completionBlock:(void(^)(NSDictionary *dic))block;
+
++ (void)requestBannerByIDS:(NSString *)ids completionBlock:(void(^)(NSDictionary *dic))block;
+
++ (void)requestBannerByID:(NSString *)topicID completionBlock:(void(^)(NSDictionary *dic))block;
 @end

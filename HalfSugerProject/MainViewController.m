@@ -7,31 +7,47 @@
 //
 
 #import "MainViewController.h"
-#import "HeaderView.h"
+#import "MyCell.h"
 #import "BannerModel.h"
 #import "TopicModel.h"
 #import "SDImageCache.h"
-#import "MyCell.h"
+#import "FileCell.h"
+#import "FileCell2.h"
+#import "CustomButton.h"
+#import "MJRefresh.h"
+#import "DetailsView.h"
+#import "DetailInfoTableViewController.h"
+#import "UserSetViewController.h"
+
 
 
 
 @interface MainViewController ()<UIScrollViewDelegate,UICollectionViewDataSource,UICollectionViewDelegate>
+{
+    UINavigationController *nav;
 
-@property(strong,nonatomic)NSMutableArray *dataArray;
+    
 
-@property(strong,nonatomic)HeaderView *headerView;
+}
+
+
+@property(strong,nonatomic)NSMutableArray *bannerArray;
+@property(strong,nonatomic)NSMutableArray *topicArray;
+
 @property(strong,nonatomic)NSTimer *timer;
-@property(strong,nonatomic)UIScrollView *scrollView;
-@property(strong,nonatomic)UIPageControl *pageControl;
-@property(strong,nonatomic)UICollectionView *collectionView;
 
+@property(nonatomic,assign)int pageNum;
+
+
+@property(strong,nonatomic)NSArray *titleArray;
 @end
 
 @implementation MainViewController
 
-- (void)viewDidAppear:(BOOL)animated{
-    [super viewDidAppear:animated];
-    [self.collectionView reloadData];
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    self.navigationController.navigationBarHidden=YES;
+    [self.publicCollection reloadData];
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -55,247 +71,443 @@
 
 
 
-
-
 - (void)viewDidLoad
 {
+    
+    
     [super viewDidLoad];
     
-    [self loadHeadView];
-    //先设置头
-    [self.navigationController.navigationBar addSubview:_headerView];
-    
-    _dataArray=[[NSMutableArray alloc] initWithCapacity:0];
-    [CYHHTTPParserEngine requestBannerWithcompletionBlock:^(NSDictionary *dic) {
-        NSArray *bannerArr=dic[@"data"][@"banner"];
-        NSArray *topicArr=dic[@"data"][@"topic"];
-        
-        for (int i=0; i<bannerArr.count; i++) {
-            NSDictionary *dic=bannerArr[i];
-            BannerModel *bannerObj=[[BannerModel alloc] initWithBanner:dic];
-            [_dataArray addObject:bannerObj];
-            
-        }
-        
-        for (int i=0; i<topicArr.count; i++) {
-            NSDictionary *dic=topicArr[i];
-            TopicModel *topicObj=[[TopicModel alloc] initWithTopic:dic];
-            [_dataArray addObject:topicObj];
-            
-        }
-        NSLog(@"%@",_dataArray);
-        
-    }];
-    
-    [self addTimer];
+    [self loadDataSource];
     
     
-    //设置collection的属性,代理和注册表格
+    [self.publicCollection registerNib:[UINib nibWithNibName:@"FileCell2" bundle:nil] forCellWithReuseIdentifier:@"cell0"];
     
-    UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
-    layout.itemSize = CGSizeMake(380, 250);
-    layout.sectionInset = UIEdgeInsetsMake(2, 2, 2, 2);
-    layout.minimumLineSpacing = 2;
+    [self.publicCollection registerNib:[UINib nibWithNibName:@"FileCell" bundle:nil] forCellWithReuseIdentifier:@"cell1"];
     
-    
-    
-    self.collectionView=[[UICollectionView alloc] initWithFrame:CGRectMake(0, 64, self.view.frame.size.width, self.view.frame.size.height-64) collectionViewLayout:layout];
-    self.collectionView.backgroundColor = [UIColor whiteColor];
-    self.collectionView.contentInset = UIEdgeInsetsMake(250, 0, 0, 0);
-    self.collectionView.delegate=self;
-    self.collectionView.dataSource=self;
-    [self.collectionView registerNib:[UINib nibWithNibName:@"MyCell" bundle:nil] forCellWithReuseIdentifier:@"cell"];
-    [self.view addSubview:_collectionView];
+    //加载头部视图
+    self.navigationController.navigationBarHidden=YES;
     
     
-
+    _titleArray=[[NSArray alloc] initWithObjects:@"家居", @"创意",@"办公",@"卫浴",@"护肤",@"美食",@"主题",@"植物",@"厨具",@"杂货",@"运动",@"数码",nil];
+    
    
-}
-
-- (void)loadHeadView
-{
-    _headerView=[[HeaderView alloc] init];
-    _headerView.frame=CGRectMake(0, 0, self.view.frame.size.width, 64);
-    
-}
-
-
-
--(UIScrollView *)scrollView
-{
-    
-    if (!_scrollView) {
-        _scrollView=[[UIScrollView alloc] init];
-        _scrollView.layer.borderWidth=5;
-        _scrollView.layer.borderColor=[UIColor whiteColor].CGColor;
+    for (int i=0; i<12; i++) {
+        CustomButton *button=[[CustomButton alloc] initWithFrame:CGRectMake(5+105*i, 0, 100, self.isHiddenTitleView.frame.size.height) imageStr:[NSString stringWithFormat:@"category_%d@2x.png",i+1] labelStr:_titleArray[i]];
+        button.tag=i+1;
         
-        _scrollView.frame=CGRectMake(0, 64, self.view.frame.size.width, 150);
-        _scrollView.backgroundColor=[UIColor greenColor];
-        for (int i=0; i<5; i++) {
-            BannerModel *bannerObj=_dataArray[i];
-            
-            UIImageView *imgView=[[UIImageView alloc] init];
-            
-            //图片X
-            CGFloat imageX=i*self.view.frame.size.width;
-            
-            //给图片设置坐标大小参数
-            imgView.frame=CGRectMake(imageX, 0, self.view.frame.size.width,_scrollView.frame.size.height);
-            
-            //设置图片
-           
-            [imgView setImageWithURL:[NSURL URLWithString:bannerObj.photo]];
-            
-            //隐藏指示条
-            _scrollView.showsVerticalScrollIndicator=NO;
-            
-            [_scrollView addSubview:imgView];
-        }
+        [button addTarget:self action:@selector(clickChangeViewAndGotoCategoryView:) forControlEvents:UIControlEventTouchUpInside];
         
-        //2.设置scrollview的滚动范围
-        CGFloat contentW=5*self.view.frame.size.width;
-        _scrollView.contentSize=CGSizeMake(contentW, 0);
-        
-        //3.设置分页
-         _scrollView.pagingEnabled=YES;
-        
-        //设置当前页  self.pageControl.currentPage=3;
-        
-        //4.监听scrollView的滚动   --添加代理
-        
-        _scrollView.delegate=self;
-        
-        
-        [self.view addSubview:_scrollView];
+       
+        [_isHiddenTitleView addSubview:button];
         
     }
     
-    return _scrollView;
+    _isHiddenTitleView.contentSize=CGSizeMake(105*12,0);
+    _isHiddenTitleView.showsVerticalScrollIndicator = NO;
+
+    _isHiddenTitleView.hidden=YES;
     
+    [_publicCollection addFooterWithTarget:self action:@selector(insertRowAtBottom)];
+    _publicCollection.footerPullToRefreshText=@"想要数据那你就往上拉";
+    _publicCollection.footerRefreshingText=@"航哥为你刷新数据";
+    
+    //创建那个个人中心界面
+    
+    [self loadSetView];
     
 }
 
 
+- (void)insertRowAtBottom{
+    
+    
+    if (self.bannerArray.count==0) {
+        NSLog(@"不下拉刷新");
+        _publicCollection.footerPullToRefreshText=@"";
+        _publicCollection.footerRefreshingText=@"";
+        [self.publicCollection headerEndRefreshing];
+        
+    }else
+    {
+        __unsafe_unretained typeof(self) weakSelf = self;
+        
+        
+        ++weakSelf.pageNum;
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            
+            [weakSelf.publicCollection footerEndRefreshing];
+            [CYHHTTPParserEngine requestBannerByPageNum:weakSelf.pageNum completionBlock:^(NSDictionary *dic) {
+                NSArray *bannerArr=dic[@"data"][@"banner"];
+                NSArray *topicArr=dic[@"data"][@"topic"];
+                
+                if (bannerArr.count>0) {
+                    for (int i=0; i<bannerArr.count; i++) {
+                        NSDictionary *dic=bannerArr[i];
+                        BannerModel *bannerObj=[[BannerModel alloc] initWithBanner:dic];
+                        [weakSelf.bannerArray addObject:bannerObj];
+                        
+                    }
+                }
+                
+                if (topicArr.count>0) {
+                    for (int i=0; i<topicArr.count; i++) {
+                        NSDictionary *dic=topicArr[i];
+                        TopicModel *topicObj=[[TopicModel alloc] initWithTopic:dic];
+                        [weakSelf.topicArray addObject:topicObj];
+                        
+                    }
+                }
+                
+                
+                [weakSelf.publicCollection reloadData];
+                [weakSelf.publicCollection headerEndRefreshing];
+                
+                
+            }];
+            
+            
+        });
 
-
--(UIPageControl *)pageControl
-{
-    if (!_pageControl) {
-        _pageControl=[[UIPageControl alloc] init];
-        _pageControl.frame=CGRectMake(200, 200, 100, 10);
-        _pageControl.numberOfPages=5;
-        _pageControl.currentPageIndicatorTintColor=[UIColor grayColor];
-        _pageControl.backgroundColor=[UIColor clearColor];
-        _pageControl.currentPage=0;
-        [self.view addSubview:_pageControl];
+    
+    
     }
-    return _pageControl;
     
-    
+
 }
 
 
 
--(void) nextImage
+- (void)loadDataSource
 {
+    self.pageNum=0;
+    _topicArray=[NSMutableArray array];
+    _bannerArray=[NSMutableArray array];
     
-  
-    int page=(int)self.pageControl.currentPage;
+    __unsafe_unretained typeof(self) weakSelf = self;
     
-    if (page==4) {
-        page=0;
-    }else{
-        page++;
-    }
     
-    CGFloat x=page * self.scrollView.frame.size.width;
+    [CYHHTTPParserEngine requestBannerByPageNum:weakSelf.pageNum completionBlock:^(NSDictionary *dic) {
+          [weakSelf.publicCollection footerEndRefreshing];
+            NSArray *bannerArr=dic[@"data"][@"banner"];
+            NSArray *topicArr=dic[@"data"][@"topic"];
+            
+            for (int i=0; i<bannerArr.count; i++) {
+                NSDictionary *dic=bannerArr[i];
+                BannerModel *bannerObj=[[BannerModel alloc] initWithBanner:dic];
+                [weakSelf.bannerArray addObject:bannerObj];
+                
+            }
+            
+            for (int i=0; i<topicArr.count; i++) {
+                NSDictionary *dic=topicArr[i];
+                TopicModel *topicObj=[[TopicModel alloc] initWithTopic:dic];
+                [weakSelf.topicArray addObject:topicObj];
+                
+            }
+            
+            
+            NSLog(@"%d",self.topicArray.count);
+            
+            NSLog(@"%@",self.bannerArray);
+            
+            
+            [weakSelf.publicCollection reloadData];
+            [weakSelf.publicCollection footerEndRefreshing];
+        
+        }];
     
-    self.scrollView.contentOffset=CGPointMake(x, 0);
-    
-}
 
--(void)scrollViewDidScroll:(UIScrollView *)scrollView
-{
-    NSLog(@"滚动中");
-    
-    
-    CGFloat scrollViewW=scrollView.frame.size.width;
-
-    CGFloat x=scrollView.contentOffset.x;
-    
-    int page=(x+scrollViewW/2)/scrollViewW;
-   
-    self.pageControl.currentPage=page;
-    
-   
-}
-
-// 开始拖拽的时候调用  一开始手动拖拽就关闭定时器
-- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
-{
-    //    关闭定时器(注意点; 定时器一旦被关闭,无法再开启)
-    //    [self.timer invalidate];
-    [self removeTimer];
-}
-
-
-//结束拖拽的时候调用  一结束手动拖拽就关闭定时器
-- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
-{
-    //    开启定时器
-    [self addTimer];
 }
 
 
-/**
- *  开启定时器
- */
-- (void)addTimer{
-    
-    self.timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(nextImage) userInfo:nil repeats:YES];
-    [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
-}
-
-/**
- *  关闭定时器
- */
-- (void)removeTimer
-{
-    [self.timer invalidate];
-}
 
 
 #pragma mark -
 #pragma mark 瀑布流数据源和代理
 
+-(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
+{
+    if (self.bannerArray.count==0) {
+        return 1;
+    }else
+    {
+        return 2;
+    }
+    
+
+}
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     
-    if (_dataArray.count>5) {
-        return _dataArray.count-5;
+    if (self.bannerArray.count==0) {
+        return self.topicArray.count;
+    }
+    
+    else{
+        
+        if (section==0) {
+            return 1;
+        }else
+        {
+            return self.topicArray.count;
+            
+            
+        }
+        
+    }
+       
+    
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    if (self.bannerArray.count==0) {
+       
+        FileCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell1" forIndexPath:indexPath];
+        
+        TopicModel *topicObj=self.topicArray[indexPath.row];
+        
+        [cell.picView setImageWithURL:[NSURL URLWithString:topicObj.pic]];
+        cell.layer.borderWidth=2;
+        cell.layer.borderColor=[UIColor grayColor].CGColor;
+        cell.picName.text=topicObj.topicTitle;
+        cell.picDesc.text=topicObj.desc;
+        cell.picLinks.text=[NSString stringWithFormat:@"%d",topicObj.likes];
+        
+        return cell;
+
     }else
     {
-        return 1;
+        if (indexPath.section==0) {
+            FileCell2 *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell0" forIndexPath:indexPath];
+            
+            
+            for (int i=0; i<self.bannerArray.count;i++) {
+                BannerModel *bannerObj=self.bannerArray[i];
+                UIButton *button=[UIButton buttonWithType:UIButtonTypeCustom];
+                button.frame=CGRectMake(self.view.frame.size.width*i, 0, self.view.frame.size.width, cell.CellScrollView.frame.size.height);
+                
+                button.tag=i+1;
+                [button setImageWithURL:[NSURL URLWithString:bannerObj.photo]];
+                [button addTarget:self action:@selector(buttonClickIntoDetail:) forControlEvents:UIControlEventTouchUpInside];
+                [cell.CellScrollView addSubview:button];
+            }
+            cell.CellScrollView.contentSize=CGSizeMake(768*5,0 );
+            
+            
+            return cell;
+            
+        }
+        else {
+            FileCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell1" forIndexPath:indexPath];
+            
+            TopicModel *topicObj=self.topicArray[indexPath.row];
+            
+            [cell.picView setImageWithURL:[NSURL URLWithString:topicObj.pic]];
+            cell.layer.borderWidth=2;
+            cell.layer.borderColor=[UIColor grayColor].CGColor;
+            cell.picName.text=topicObj.topicTitle;
+            cell.picDesc.text=topicObj.desc;
+            cell.picLinks.text=[NSString stringWithFormat:@"%d",topicObj.likes];
+            
+            return cell;
+            
+        }
+    
+    }
+   
+
+}
+
+-(void)buttonClickIntoDetail:(UIButton *)button
+{
+    BannerModel *bannerObj=_bannerArray[button.tag-1];
+    
+    DetailsView *vc=[[DetailsView alloc] init];
+    vc.nacTitle=bannerObj.bannerTitle;
+    vc.extend=bannerObj.extend;
+    [self.navigationController pushViewController:vc animated:YES];
+
+}
+
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (_bannerArray.count==0) {
+        return CGSizeMake(370, 250);
+    }else
+    {
+        if (indexPath.section==0) {
+            return CGSizeMake(self.view.frame.size.width, 200);
+        }else
+        {
+            return CGSizeMake(370, 250);
+        }
+    
+    }
+    
+    
+    
+
+}
+
+
+
+
+- (UIEdgeInsets)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout insetForSectionAtIndex:(NSInteger)section
+{
+
+    return UIEdgeInsetsMake(5, 5, 5, 5);
+
+}
+
+
+-(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"%d",indexPath.row);
+    TopicModel *topicObj=_topicArray[indexPath.row];
+    
+    DetailInfoTableViewController *dvc=[[DetailInfoTableViewController alloc] init];
+    dvc.context=[NSString stringWithFormat:@"%d",topicObj.topicID];
+    
+    
+    [self.navigationController pushViewController:dvc animated:YES];
+}
+
+
+#pragma mark -
+#pragma mark button的点击方法
+- (IBAction)displayHiddenView:(id)sender {
+    
+    
+    UIButton *button=(UIButton *)sender;
+  
+    
+    button.selected=!button.selected;
+    
+    if (button.selected) {
+        _isHiddenTitleView.hidden=NO;
+        _changeImageView.image=[UIImage imageNamed:@"arrow_up"];
+        button.selected=YES;
+    }else
+    {
+        
+        //重新获取数据源
+        //这块的页面应该是一个push?模块弹出?还是将当前collectionView
+        //中的数据全部清除  然后嘿嘿嘿..改成分类信息
+        _isHiddenTitleView.hidden=YES;
+        
+        _changeImageView.image=[UIImage imageNamed:@"arrow_down"];
+        button.selected=NO;
+        ////跳转到某个分类页面
     
     }
     
     
 }
 
-- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-   MyCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
+- (IBAction)goHome:(id)sender {
     
+    [self loadDataSource];
+    _categoryButton.text=@"分类";
+   
     
-    TopicModel *topicObj=_dataArray[indexPath.row+5];
-    
-    [cell.cellImageView setImageWithURL:[NSURL URLWithString:topicObj.pic]];
-    cell.cellTitleLabel.text=topicObj.topicTitle;
-    cell.cellDescLabel.text=topicObj.desc;
-    cell.cellCollectLabel.text=[NSString stringWithFormat:@"💗%d",topicObj.likes];
-    
-    
-    return cell;
 }
+- (IBAction)goSet:(id)sender {
+    
+    [UIView animateWithDuration:2 animations:^{
+       
+        nav.view.bounds=CGRectMake(0, 0, 400, 600);
+        
+    } completion:^(BOOL finished) {
+        self.view.userInteractionEnabled=NO;
+    }];
+}
+
+- (void)loadSetView
+{
+
+        UserSetViewController *userSettingVC = [[UserSetViewController alloc] init];
+        
+        nav = [[UINavigationController alloc] initWithRootViewController:userSettingVC];
+        nav.view.center=self.view.center;
+        nav.view.bounds=CGRectMake(0, 0, 0, 0);
+    
+        nav.navigationBarHidden = YES;
+   
+        [self.view addSubview:nav.view];
+
+}
+
+
+- (IBAction)goLogin:(id)sender {
+    
+    
+    
+}
+
+-(void)clickChangeViewAndGotoCategoryView:(CustomButton *)button
+{
+    
+    [self.publicCollection removeHeader];
+    
+    
+    NSString *title=_titleArray[button.tag-1];
+    _isHiddenTitleView.hidden=YES;
+    _categoryButton.text=title;
+    _changeImageView.image=[UIImage imageNamed:@"arrow_down"];
+    //重装数据源
+    
+    __weak MainViewController *weakSelf=self;
+    
+    [CYHHTTPParserEngine requestBannerByCategoryID:button.tag completionBlock:
+     ^(NSDictionary *dic) {
+         [weakSelf.bannerArray removeAllObjects];
+         [weakSelf.topicArray removeAllObjects];
+         
+         NSArray *topicArr=dic[@"data"][@"topic"];
+         
+         
+         for (int i=0; i<topicArr.count; i++) {
+             NSDictionary *dic=topicArr[i];
+             TopicModel *topicObj=[[TopicModel alloc] initWithTopic:dic];
+             [weakSelf.topicArray addObject:topicObj];
+             
+         }
+         
+         NSLog(@"%d",self.topicArray.count);
+         
+         NSLog(@"%@",self.bannerArray);
+         
+         
+         [weakSelf.publicCollection reloadData];
+ 
+     }
+     
+     ];
+    
+}
+
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    
+    self.view.userInteractionEnabled=YES;
+    [UIView animateWithDuration:2 animations:^{
+        nav.view.center=self.view.center;
+        nav.view.bounds=CGRectMake(0, 0, 0, 0);
+        
+        nav.view.frame=CGRectMake(self.view.center.x, self.view.center.y, 0, 0);
+        
+    } completion:^(BOOL finished) {
+        self.view.userInteractionEnabled=YES;
+    }];
+
+
+}
+
+
 
 
 @end

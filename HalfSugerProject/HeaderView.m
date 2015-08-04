@@ -8,6 +8,7 @@
 
 #import "HeaderView.h"
 #import "CategoryButton.h"
+#import "CustomButton.h"
 
 
 
@@ -23,30 +24,29 @@
 }
 
 
-//用通知改变button上的字
 
--(instancetype)init
+
+-(instancetype)initWithFrame:(CGRect)frame textLabel:(NSString *)titleLabel imgStr:(NSString *)imgStr
 {
+    self.titleLabel=titleLabel;
+    self.imgStr=imgStr;
+    self.frame=frame;
     self=[super init];
     if (self) {
         
         //创建一个logo
-        //创建一个拥有状态的button 根据通知改变button的标题根据点击状态来改变图标
+        UIImageView *imageView=[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"logo"]];
+        imageView.frame=CGRectMake(0, 0, 64, 64);
+        [self addSubview:imageView];
         
-        //创建三个button 首页 设置 登陆注册
-        
-    
-        
-        
-        
+       //UIButton
         
     }
-
+    
     return self;
+    
 
 }
-
-
 
 
 

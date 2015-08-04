@@ -9,5 +9,11 @@
 #import <UIKit/UIKit.h>
 @interface HeaderView : UIView
 
+@property(nonatomic,copy)NSString *titleLabel;
+@property(nonatomic,copy)NSString *imgStr;
+
+
+-(instancetype)initWithFrame:(CGRect)frame textLabel:(NSString *)titleLabel imgStr:(NSString *)imgStr;
+
 
 @end
